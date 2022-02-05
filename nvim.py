@@ -150,3 +150,6 @@ def on_breakpoint_modified(breakpoint):
 gdb.events.stop.connect(on_stopped)
 gdb.events.breakpoint_created.connect(on_breakpoint_created)
 gdb.events.breakpoint_deleted.connect(on_breakpoint_deleted)
+
+if os.environ.get("NVIM_LISTEN_ADDRESS", None) is not None:
+    os.environ["EDITOR"] = """nvim -u NONE -i NORC --headless --cmd "call rpcrequest(sockconnect('pipe', '$NVIM_LISTEN_ADDRESS', {'rpc': v:true}), 'nvim_command', 'sp ' . v:argv[-1])" --cmd 'q'"""
