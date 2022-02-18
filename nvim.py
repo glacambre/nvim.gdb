@@ -3,7 +3,6 @@ import os
 
 class Nvim():
     def __enter__(self):
-        from pynvim import attach
         addr = os.environ.get("NVIM_LISTEN_ADDRESS", None)
         self.nvim = attach("socket", path=addr)
         return self.nvim
@@ -147,9 +146,13 @@ def on_breakpoint_modified(breakpoint):
     else:
         on_breakpoint_deleted(breakpoint)
 
-gdb.events.stop.connect(on_stopped)
-gdb.events.breakpoint_created.connect(on_breakpoint_created)
-gdb.events.breakpoint_deleted.connect(on_breakpoint_deleted)
+try:
+    from pynvim import attach
+    gdb.events.stop.connect(on_stopped)
+    gdb.events.breakpoint_created.connect(on_breakpoint_created)
+    gdb.events.breakpoint_deleted.connect(on_breakpoint_deleted)
+except:
+    pass
 
 if os.environ.get("NVIM_LISTEN_ADDRESS", None) is not None:
     os.environ["EDITOR"] = """nvim -u NONE -i NORC --headless --cmd "call rpcrequest(sockconnect('pipe', '$NVIM_LISTEN_ADDRESS', {'rpc': v:true}), 'nvim_command', 'sp ' . v:argv[-1])" --cmd 'q'"""
